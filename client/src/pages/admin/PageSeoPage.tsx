@@ -25,11 +25,7 @@ export default function PageSeoPage() {
       submissionData.robotsIndex = submissionData.robotsIndex ?? true;
       submissionData.robotsFollow = submissionData.robotsFollow ?? true;
 
-      return apiRequest('/api/seo/pages', { 
-        method: 'POST', 
-        body: JSON.stringify(submissionData), 
-        headers: { 'Content-Type': 'application/json' } 
-      });
+      return apiRequest('POST', '/api/seo/pages', submissionData);
     },
     onSuccess: () => { 
       queryClient.invalidateQueries({ queryKey: ['/api/seo/pages'] }); 
