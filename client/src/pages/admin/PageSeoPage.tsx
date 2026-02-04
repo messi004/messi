@@ -6,7 +6,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Switch } from "@/components/ui/switch";
-import { Loader2, Pencil } from "lucide-react";
+import { Loader2, Pencil, Upload } from "lucide-react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
@@ -17,8 +17,32 @@ export default function PageSeoPage() {
   const { toast } = useToast();
 
   const saveSeo = useMutation({
-    mutationFn: (data: any) => apiRequest('/api/seo/pages', { method: 'POST', body: JSON.stringify(data), headers: { 'Content-Type': 'application/json' } }),
-    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['/api/seo/pages'] }); toast({ title: "SEO saved!" }); setEditingPage(null); }
+    mutationFn: (data: any) => {
+      // Create a copy and clean up before sending
+      const submissionData = { ...data };
+      
+      // Ensure robots values are boolean
+      submissionData.robotsIndex = submissionData.robotsIndex ?? true;
+      submissionData.robotsFollow = submissionData.robotsFollow ?? true;
+
+      return apiRequest('/api/seo/pages', { 
+        method: 'POST', 
+        body: JSON.stringify(submissionData), 
+        headers: { 'Content-Type': 'application/json' } 
+      });
+    },
+    onSuccess: () => { 
+      queryClient.invalidateQueries({ queryKey: ['/api/seo/pages'] }); 
+      toast({ title: "SEO saved!" }); 
+      setEditingPage(null); 
+    },
+    onError: (error: any) => {
+      toast({ 
+        title: "Failed to save SEO", 
+        description: error.message || "An unknown error occurred",
+        variant: "destructive" 
+      });
+    }
   });
 
   return (
@@ -59,7 +83,45 @@ export default function PageSeoPage() {
 
 function PageSeoForm({ page, onSave, saving }: { page: any; onSave: (data: any) => void; saving: boolean }) {
   const [formData, setFormData] = useState(page);
+  const [uploading, setUploading] = useState(false);
+  const { toast } = useToast();
+
   const update = (key: string, value: any) => setFormData({ ...formData, [key]: value });
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const uploadData = new FormData();
+    uploadData.append("image", file);
+
+    setUploading(true);
+    try {
+      const res = await fetch("/api/upload", { 
+        method: "POST", 
+        body: uploadData, 
+        credentials: "include" 
+      });
+      
+      if (!res.ok) {
+        const errorData = await res.json();
+        throw new Error(errorData.message || "Upload failed");
+      }
+      
+      const data = await res.json();
+      update('ogImage', data.url);
+      toast({ title: "Image uploaded successfully!" });
+    } catch (error: any) {
+      console.error("Upload error:", error);
+      toast({ 
+        title: "Upload failed", 
+        description: error.message,
+        variant: "destructive" 
+      });
+    } finally {
+      setUploading(false);
+    }
+  };
 
   return (
     <div className="space-y-6">
@@ -86,11 +148,31 @@ function PageSeoForm({ page, onSave, saving }: { page: any; onSave: (data: any) 
         <div className="grid gap-4">
           <div><label className="text-sm font-medium">OG Title</label><Input value={formData.ogTitle || ''} onChange={(e) => update('ogTitle', e.target.value)} /></div>
           <div><label className="text-sm font-medium">OG Description</label><Textarea value={formData.ogDescription || ''} onChange={(e) => update('ogDescription', e.target.value)} /></div>
-          <div><label className="text-sm font-medium">OG Image URL</label><Input value={formData.ogImage || ''} onChange={(e) => update('ogImage', e.target.value)} placeholder="https://..." /></div>
+          <div className="space-y-2">
+            <label className="text-sm font-medium">OG Image</label>
+            <div className="flex gap-4 items-center">
+              <Input 
+                type="file" 
+                accept="image/*" 
+                onChange={handleImageUpload} 
+                disabled={uploading}
+                className="cursor-pointer"
+              />
+              {uploading && <Loader2 className="animate-spin h-5 w-5" />}
+            </div>
+            {formData.ogImage && (
+              <div className="mt-2 relative group">
+                <img src={formData.ogImage} alt="OG Preview" className="h-32 rounded border object-cover" />
+                <div className="mt-1 text-xs text-muted-foreground truncate max-w-xs">{formData.ogImage}</div>
+              </div>
+            )}
+          </div>
         </div>
       </div>
 
-      <Button onClick={() => onSave(formData)} disabled={saving} className="w-full">{saving ? "Saving..." : "Save SEO Settings"}</Button>
+      <Button onClick={() => onSave(formData)} disabled={saving || uploading} className="w-full">
+        {saving ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Saving...</> : "Save SEO Settings"}
+      </Button>
     </div>
   );
 }
