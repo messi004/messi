@@ -133,16 +133,19 @@ export async function registerRoutes(
   });
 
   // === IMAGE UPLOAD (Supabase Storage) ===
-  app.post('/api/upload', requireAuth, upload.single('image'), async (req, res) => {
+  app.post('/api/upload', requireAuth, upload.single('image'), async (req: Request, res: Response) => {
     try {
       if (!req.file) {
         return res.status(400).json({ message: "No file uploaded" });
       }
       const url = await uploadToSupabase(req.file.buffer, req.file.originalname, req.file.mimetype);
       res.json({ url });
-    } catch (error) {
-      console.error("Upload error:", error);
-      res.status(500).json({ message: "Upload failed. Check Supabase storage configuration." });
+    } catch (error: any) {
+      console.error("Upload error details:", error);
+      res.status(500).json({ 
+        message: "Upload failed. Check Supabase storage configuration.",
+        error: error.message 
+      });
     }
   });
 

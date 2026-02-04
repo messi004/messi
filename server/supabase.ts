@@ -1,7 +1,11 @@
 import { createClient } from '@supabase/supabase-js';
 
 const supabaseUrl = 'https://dowmnaaetqugtfoekkxq.supabase.co';
-const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || 'sb_publishable_HKaJTMhb8XbV0QXHFhr5EQ_q7n8bmYS';
+const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+if (!supabaseServiceKey) {
+  throw new Error('SUPABASE_SERVICE_ROLE_KEY is not defined');
+}
 
 export const supabase = createClient(supabaseUrl, supabaseServiceKey);
 

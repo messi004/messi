@@ -41,3 +41,8 @@ waitForPort = 5000
 
 [agent]
 expertMode = true
+
+[userenv]
+
+[userenv.shared]
+SUPABASE_SERVICE_ROLE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRvd21uYWFldHF1Z3Rmb2Vra3hxIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3MDAyNDA5NiwiZXhwIjoyMDg1NjAwMDk2fQ.VN01ZDKUKi5dDlcFQTmESp9LqilJNyDmwnL8f7vz4p0"
