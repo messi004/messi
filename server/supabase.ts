@@ -29,6 +29,10 @@ export async function uploadToSupabase(file: Buffer, filename: string, contentTy
     .from('portfolio')
     .getPublicUrl(uniqueFilename);
 
+  // Ensure the URL is correctly formatted and accessible
+  // If the bucket is private, getPublicUrl will still return a URL but it won't work
+  // We're using service role key, so we can also check if we should use signed URLs
+  // but for a portfolio, the bucket should ideally be public.
   return urlData.publicUrl;
 }
 
