@@ -85,16 +85,21 @@ export class DatabaseStorage {
   }
 
   async upsertPageSeo(data: InsertPageSeo): Promise<PageSeo> {
-    const existing = await this.getPageSeo(data.pageSlug);
-    if (existing) {
-      const [updated] = await db.update(pageSeo)
-        .set({ ...data, updatedAt: new Date() })
-        .where(eq(pageSeo.pageSlug, data.pageSlug))
-        .returning();
-      return updated;
+    try {
+      const existing = await this.getPageSeo(data.pageSlug);
+      if (existing) {
+        const [updated] = await db.update(pageSeo)
+          .set({ ...data, updatedAt: new Date() })
+          .where(eq(pageSeo.pageSlug, data.pageSlug))
+          .returning();
+        return updated;
+      }
+      const [created] = await db.insert(pageSeo).values(data).returning();
+      return created;
+    } catch (error) {
+      console.error(`Error in upsertPageSeo for slug ${data.pageSlug}:`, error);
+      throw error;
     }
-    const [created] = await db.insert(pageSeo).values(data).returning();
-    return created;
   }
 
   async deletePageSeo(pageSlug: string): Promise<void> {

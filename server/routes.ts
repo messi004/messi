@@ -79,10 +79,11 @@ export async function registerRoutes(
       const project = await storage.createProject(input);
       res.status(201).json(project);
     } catch (err) {
+      console.error("Project creation error:", err);
       if (err instanceof z.ZodError) {
         return res.status(400).json({ message: err.errors[0].message });
       }
-      throw err;
+      res.status(500).json({ message: "Failed to create project", error: err instanceof Error ? err.message : String(err) });
     }
   });
 
