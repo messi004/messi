@@ -124,9 +124,9 @@ function PageSeoForm({ page, onSave, saving }: { page: any; onSave: (data: any) 
       <div className="space-y-4">
         <h4 className="font-semibold text-sm text-muted-foreground uppercase tracking-wide">Basic Meta Tags</h4>
         <div className="grid gap-4">
-          <div><label className="text-sm font-medium">Title Tag</label><Input value={formData.metaTitle || ''} onChange={(e) => update('metaTitle', e.target.value)} placeholder="Page Title | Site Name" /></div>
+          <div><label className="text-sm font-medium">Meta Title</label><Input value={formData.metaTitle || ''} onChange={(e) => update('metaTitle', e.target.value)} placeholder="Page Title | Site Name" /></div>
+          <div><label className="text-sm font-medium">Meta Tag (Custom HTML)</label><Input value={formData.metaKeywords || ''} onChange={(e) => update('metaKeywords', e.target.value)} placeholder='<meta name="example" content="value">' /></div>
           <div><label className="text-sm font-medium">Meta Description</label><Textarea value={formData.metaDescription || ''} onChange={(e) => update('metaDescription', e.target.value)} placeholder="Page description for search engines..." /></div>
-          <div><label className="text-sm font-medium">Meta Keywords</label><Input value={formData.metaKeywords || ''} onChange={(e) => update('metaKeywords', e.target.value)} placeholder="keyword1, keyword2, keyword3" /></div>
           <div><label className="text-sm font-medium">Canonical URL</label><Input value={formData.canonicalUrl || ''} onChange={(e) => update('canonicalUrl', e.target.value)} placeholder="https://yoursite.com/page" /></div>
         </div>
       </div>
