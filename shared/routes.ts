@@ -8,7 +8,7 @@ import {
   type LoginRequest,
   type InsertContactMessage,
   type InsertProject
-} from './schema';
+} from './schema.js';
 
 export type { LoginRequest, InsertContactMessage, InsertProject };
 
