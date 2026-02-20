@@ -1,5 +1,16 @@
 import { z } from 'zod';
-import { insertProjectSchema, insertContactMessageSchema, projects, contactMessages, loginSchema } from './schema';
+import {
+  insertProjectSchema,
+  insertContactMessageSchema,
+  projects,
+  contactMessages,
+  loginSchema,
+  type LoginRequest,
+  type InsertContactMessage,
+  type InsertProject
+} from './schema';
+
+export type { LoginRequest, InsertContactMessage, InsertProject };
 
 // ============================================
 // SHARED ERROR SCHEMAS

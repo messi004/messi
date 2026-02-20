@@ -1,6 +1,14 @@
-import { pgTable, text, serial, integer, boolean, timestamp, jsonb } from "drizzle-orm/pg-core";
+import { pgTable, text, serial, integer, boolean, timestamp, jsonb, customType } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
+
+// === ADMIN USERS TABLE ===
+export const adminUsers = pgTable("admin_users", {
+  id: serial("id").primaryKey(),
+  username: text("username").notNull().unique(),
+  passwordHash: text("password_hash").notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
+});
 
 // === PROJECTS TABLE ===
 export const projects = pgTable("projects", {
@@ -158,3 +166,9 @@ export const loginSchema = z.object({
   password: z.string(),
 });
 export type LoginRequest = z.infer<typeof loginSchema>;
+
+export const changePasswordSchema = z.object({
+  currentPassword: z.string().min(1, "Current password is required"),
+  newPassword: z.string().min(6, "Password must be at least 6 characters"),
+});
+export type ChangePasswordRequest = z.infer<typeof changePasswordSchema>;

@@ -13,7 +13,7 @@ export default function SitemapPage() {
   const { toast } = useToast();
 
   const updateConfig = useMutation({
-    mutationFn: (data: any) => apiRequest('/api/seo/sitemap', { method: 'POST', body: JSON.stringify(data), headers: { 'Content-Type': 'application/json' } }),
+    mutationFn: (data: any) => apiRequest('POST', '/api/seo/sitemap', data),
     onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['/api/seo/sitemap'] }); toast({ title: "Sitemap updated!" }); }
   });
 
@@ -41,9 +41,9 @@ export default function SitemapPage() {
                     <TableRow key={c.pageSlug}>
                       <TableCell className="font-medium capitalize">{c.pageSlug}</TableCell>
                       <TableCell>
-                        <Switch 
-                          checked={c.includeInSitemap} 
-                          onCheckedChange={(v) => updateConfig.mutate({ ...c, includeInSitemap: v })} 
+                        <Switch
+                          checked={c.includeInSitemap}
+                          onCheckedChange={(v) => updateConfig.mutate({ ...c, includeInSitemap: v })}
                         />
                       </TableCell>
                       <TableCell>

@@ -21,10 +21,10 @@ export default function RedirectsPage() {
   const { toast } = useToast();
 
   const createRedirect = useMutation({
-    mutationFn: (data: any) => apiRequest('/api/redirects', { method: 'POST', body: JSON.stringify(data), headers: { 'Content-Type': 'application/json' } }),
-    onSuccess: () => { 
-      queryClient.invalidateQueries({ queryKey: ['/api/redirects'] }); 
-      toast({ title: "Redirect created!" }); 
+    mutationFn: (data: any) => apiRequest('POST', '/api/redirects', data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/redirects'] });
+      toast({ title: "Redirect created!" });
       setIsDialogOpen(false);
       setFromPath('');
       setToPath('');
@@ -34,12 +34,12 @@ export default function RedirectsPage() {
   });
 
   const updateRedirect = useMutation({
-    mutationFn: ({ id, data }: { id: number; data: any }) => apiRequest(`/api/redirects/${id}`, { method: 'PATCH', body: JSON.stringify(data), headers: { 'Content-Type': 'application/json' } }),
+    mutationFn: ({ id, data }: { id: number; data: any }) => apiRequest('PATCH', `/api/redirects/${id}`, data),
     onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['/api/redirects'] }); toast({ title: "Redirect updated!" }); }
   });
 
   const deleteRedirect = useMutation({
-    mutationFn: (id: number) => apiRequest(`/api/redirects/${id}`, { method: 'DELETE' }),
+    mutationFn: (id: number) => apiRequest('DELETE', `/api/redirects/${id}`),
     onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['/api/redirects'] }); toast({ title: "Redirect deleted" }); }
   });
 
@@ -74,8 +74,8 @@ export default function RedirectsPage() {
                     </SelectContent>
                   </Select>
                 </div>
-                <Button 
-                  onClick={() => createRedirect.mutate({ fromPath, toPath, statusCode: parseInt(statusCode), isActive: true })} 
+                <Button
+                  onClick={() => createRedirect.mutate({ fromPath, toPath, statusCode: parseInt(statusCode), isActive: true })}
                   disabled={createRedirect.isPending || !fromPath || !toPath}
                   className="w-full"
                 >
@@ -106,9 +106,9 @@ export default function RedirectsPage() {
                     <TableCell className="font-mono text-sm max-w-[200px] truncate">{r.toPath}</TableCell>
                     <TableCell>{r.statusCode}</TableCell>
                     <TableCell>
-                      <Switch 
-                        checked={r.isActive} 
-                        onCheckedChange={(v) => updateRedirect.mutate({ id: r.id, data: { isActive: v } })} 
+                      <Switch
+                        checked={r.isActive}
+                        onCheckedChange={(v) => updateRedirect.mutate({ id: r.id, data: { isActive: v } })}
                       />
                     </TableCell>
                     <TableCell className="text-right">

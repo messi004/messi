@@ -2,16 +2,16 @@ import { useAuth } from "@/hooks/use-auth";
 import { useLocation, Link } from "wouter";
 import { useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { 
-  LayoutDashboard, 
-  FolderKanban, 
-  MessageSquare, 
-  FileText, 
-  Code, 
-  Map, 
-  Bot, 
-  BarChart3, 
-  Settings, 
+import {
+  LayoutDashboard,
+  FolderKanban,
+  MessageSquare,
+  FileText,
+  Code,
+  Map,
+  Bot,
+  BarChart3,
+  Settings,
   ArrowLeftRight,
   LogOut,
   Globe
@@ -28,6 +28,7 @@ const navItems = [
   { label: "Redirects", icon: ArrowLeftRight, href: "/admin/redirects" },
   { label: "Analytics", icon: BarChart3, href: "/admin/analytics" },
   { label: "Global SEO", icon: Globe, href: "/admin/global-seo" },
+  { label: "Settings", icon: Settings, href: "/admin/settings" },
 ];
 
 interface AdminLayoutProps {
@@ -61,11 +62,10 @@ export default function AdminLayout({ children, title }: AdminLayoutProps) {
             return (
               <Link key={item.href} href={item.href}>
                 <div
-                  className={`flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium transition-colors cursor-pointer ${
-                    isActive 
-                      ? "bg-primary text-primary-foreground" 
+                  className={`flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium transition-colors cursor-pointer ${isActive
+                      ? "bg-primary text-primary-foreground"
                       : "text-muted-foreground hover:bg-muted hover:text-foreground"
-                  }`}
+                    }`}
                   data-testid={`nav-${item.label.toLowerCase().replace(/\s/g, '-')}`}
                 >
                   <item.icon size={18} />
@@ -77,8 +77,8 @@ export default function AdminLayout({ children, title }: AdminLayoutProps) {
         </nav>
 
         <div className="p-3 border-t border-border">
-          <Button 
-            variant="ghost" 
+          <Button
+            variant="ghost"
             className="w-full justify-start gap-3 text-muted-foreground hover:text-foreground"
             onClick={() => logout()}
             data-testid="button-logout"

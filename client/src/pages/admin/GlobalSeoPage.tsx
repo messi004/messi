@@ -28,7 +28,7 @@ export default function GlobalSeoPage() {
   }, [config]);
 
   const saveGlobal = useMutation({
-    mutationFn: (data: any) => apiRequest('/api/seo/global', { method: 'POST', body: JSON.stringify(data), headers: { 'Content-Type': 'application/json' } }),
+    mutationFn: (data: any) => apiRequest('POST', '/api/seo/global', data),
     onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['/api/seo/global'] }); toast({ title: "Global SEO saved!" }); }
   });
 
@@ -96,8 +96,8 @@ export default function GlobalSeoPage() {
                 </div>
               </div>
 
-              <Button 
-                onClick={() => saveGlobal.mutate({ siteName, siteDescription, defaultOgImage, favicon })} 
+              <Button
+                onClick={() => saveGlobal.mutate({ siteName, siteDescription, defaultOgImage, favicon })}
                 disabled={saveGlobal.isPending || uploading}
                 className="w-full"
               >

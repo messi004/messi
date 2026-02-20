@@ -5,10 +5,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter, DialogDescription } from "@/components/ui/dialog";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Loader2, Plus, Trash2, Pencil } from "lucide-react";
+import { Loader2, Plus, Trash2, Pencil, AlertTriangle } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { insertProjectSchema, type InsertProject, type Project } from "@shared/schema";
@@ -20,11 +20,13 @@ export default function ProjectsPage() {
   const { toast } = useToast();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingProject, setEditingProject] = useState<Project | null>(null);
+  const [deleteId, setDeleteId] = useState<number | null>(null);
 
-  const handleDelete = async (id: number) => {
-    if (confirm("Are you sure you want to delete this project?")) {
-      await deleteProject.mutateAsync(id);
+  const confirmDelete = async () => {
+    if (deleteId) {
+      await deleteProject.mutateAsync(deleteId);
       toast({ title: "Project deleted" });
+      setDeleteId(null);
     }
   };
 
@@ -70,7 +72,7 @@ export default function ProjectsPage() {
                       <Button variant="outline" size="icon" onClick={() => { setEditingProject(project); setIsDialogOpen(true); }}>
                         <Pencil size={16} />
                       </Button>
-                      <Button variant="destructive" size="icon" onClick={() => handleDelete(project.id)}>
+                      <Button variant="destructive" size="icon" onClick={() => setDeleteId(project.id)}>
                         <Trash2 size={16} />
                       </Button>
                     </TableCell>
@@ -79,6 +81,24 @@ export default function ProjectsPage() {
               </TableBody>
             </Table>
           )}
+
+          <Dialog open={!!deleteId} onOpenChange={(open) => !open && setDeleteId(null)}>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Confirm Deletion</DialogTitle>
+                <DialogDescription>
+                  Are you sure you want to delete this project? This action cannot be undone.
+                </DialogDescription>
+              </DialogHeader>
+              <DialogFooter>
+                <Button variant="outline" onClick={() => setDeleteId(null)}>Cancel</Button>
+                <Button variant="destructive" onClick={confirmDelete} disabled={deleteProject.isPending}>
+                  {deleteProject.isPending ? <Loader2 className="animate-spin mr-2 h-4 w-4" /> : null}
+                  Delete Project
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
         </CardContent>
       </Card>
     </AdminLayout>
@@ -114,7 +134,7 @@ function ProjectForm({ project, onSuccess }: { project?: Project | null; onSucce
       if (!res.ok) throw new Error("Upload failed");
       const data = await res.json();
       form.setValue("image", data.url);
-      toast({ title: "Image uploaded to Supabase!" });
+      toast({ title: "Image uploaded!" });
     } catch (error) {
       toast({ title: "Upload failed", variant: "destructive" });
     } finally {
@@ -147,7 +167,7 @@ function ProjectForm({ project, onSuccess }: { project?: Project | null; onSucce
             <FormMessage />
           </FormItem>
         )} />
-        
+
         <FormField control={form.control} name="description" render={({ field }) => (
           <FormItem>
             <FormLabel>Description</FormLabel>
@@ -157,7 +177,7 @@ function ProjectForm({ project, onSuccess }: { project?: Project | null; onSucce
         )} />
 
         <FormItem>
-          <FormLabel>Project Image (Supabase Storage)</FormLabel>
+          <FormLabel>Project Image</FormLabel>
           <FormControl>
             <div className="flex gap-4 items-center">
               <Input type="file" accept="image/*" onChange={handleImageUpload} disabled={uploading} />

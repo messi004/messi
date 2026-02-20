@@ -4,10 +4,11 @@ import { storage } from "./storage";
 import { api } from "@shared/routes";
 import { z } from "zod";
 import multer from "multer";
-import { uploadToSupabase } from "./supabase";
-import { initializeDatabase } from "./db";
+import { uploadImageToDb, getImageFromDb } from "./neon-storage";
+import { initializeDatabase, client, hashPassword } from "./db";
+import { changePasswordSchema } from "@shared/schema";
 
-const upload = multer({ storage: multer.memoryStorage() });
+const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 10 * 1024 * 1024 } }); // 10MB limit
 
 export async function registerRoutes(
   httpServer: Server,
@@ -46,13 +47,24 @@ export async function registerRoutes(
   });
 
   // === AUTHENTICATION ===
-  app.post(api.auth.login.path, (req, res) => {
+  app.post(api.auth.login.path, async (req, res) => {
     const { username, password } = req.body;
-    if (username === "admin" && password === "Messi@876910") {
+    try {
+      const users = await client`SELECT * FROM admin_users WHERE username = ${username} LIMIT 1`;
+      if (users.length === 0) {
+        return res.status(401).json({ message: "Invalid credentials" });
+      }
+      const user = users[0];
+      const passwordHash = hashPassword(password);
+      if (user.password_hash !== passwordHash) {
+        return res.status(401).json({ message: "Invalid credentials" });
+      }
       (req.session as any).authenticated = true;
+      (req.session as any).userId = user.id;
       res.json({ message: "Login successful" });
-    } else {
-      res.status(401).json({ message: "Invalid credentials" });
+    } catch (error) {
+      console.error("Login error:", error);
+      res.status(500).json({ message: "Login failed" });
     }
   });
 
@@ -65,6 +77,38 @@ export async function registerRoutes(
   app.get(api.auth.check.path, (req, res) => {
     const authenticated = !!(req.session as any)?.authenticated;
     res.json({ authenticated });
+  });
+
+  // === CHANGE PASSWORD ===
+  app.patch('/api/auth/password', requireAuth, async (req, res) => {
+    try {
+      const { currentPassword, newPassword } = changePasswordSchema.parse(req.body);
+      const userId = (req.session as any).userId;
+
+      // Get current user
+      const users = await client`SELECT * FROM admin_users WHERE id = ${userId} LIMIT 1`;
+      if (users.length === 0) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      // Verify current password
+      const currentHash = hashPassword(currentPassword);
+      if (users[0].password_hash !== currentHash) {
+        return res.status(401).json({ message: "Current password is incorrect" });
+      }
+
+      // Update password
+      const newHash = hashPassword(newPassword);
+      await client`UPDATE admin_users SET password_hash = ${newHash} WHERE id = ${userId}`;
+
+      res.json({ message: "Password changed successfully" });
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: error.errors[0].message });
+      }
+      console.error("Password change error:", error);
+      res.status(500).json({ message: "Failed to change password" });
+    }
   });
 
   // === PROJECTS CRUD ===
@@ -133,20 +177,42 @@ export async function registerRoutes(
     res.status(204).send();
   });
 
-  // === IMAGE UPLOAD (Supabase Storage) ===
+  // === IMAGE UPLOAD (Neon DB Binary Storage) ===
   app.post('/api/upload', requireAuth, upload.single('image'), async (req: Request, res: Response) => {
     try {
       if (!req.file) {
         return res.status(400).json({ message: "No file uploaded" });
       }
-      const url = await uploadToSupabase(req.file.buffer, req.file.originalname, req.file.mimetype);
+      const imageId = await uploadImageToDb(req.file.buffer, req.file.originalname, req.file.mimetype);
+      const url = `/api/images/${imageId}`;
       res.json({ url });
     } catch (error: any) {
       console.error("Upload error details:", error);
-      res.status(500).json({ 
-        message: "Upload failed. Check Supabase storage configuration.",
-        error: error.message 
+      res.status(500).json({
+        message: "Upload failed.",
+        error: error.message
       });
+    }
+  });
+
+  // === SERVE IMAGES FROM DB ===
+  app.get('/api/images/:id', async (req: Request, res: Response) => {
+    try {
+      const id = parseInt(req.params.id as string);
+      if (isNaN(id)) {
+        return res.status(400).json({ message: "Invalid image ID" });
+      }
+      const image = await getImageFromDb(id);
+      if (!image) {
+        return res.status(404).json({ message: "Image not found" });
+      }
+      res.set('Content-Type', image.mimeType);
+      res.set('Content-Length', String(image.size));
+      res.set('Cache-Control', 'public, max-age=31536000, immutable');
+      res.send(image.data);
+    } catch (error: any) {
+      console.error("Image serve error:", error);
+      res.status(500).json({ message: "Failed to serve image" });
     }
   });
 
@@ -246,10 +312,10 @@ export async function registerRoutes(
   app.get('/sitemap.xml', async (req, res) => {
     const configs = await storage.getAllSitemapConfig();
     const baseUrl = `${req.protocol}://${req.get('host')}`;
-    
+
     let xml = '<?xml version="1.0" encoding="UTF-8"?>\n';
     xml += '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n';
-    
+
     for (const config of configs) {
       if (config.includeInSitemap) {
         xml += '  <url>\n';
@@ -260,7 +326,7 @@ export async function registerRoutes(
         xml += '  </url>\n';
       }
     }
-    
+
     xml += '</urlset>';
     res.set('Content-Type', 'application/xml');
     res.send(xml);
@@ -281,7 +347,7 @@ export async function registerRoutes(
   app.get('/robots.txt', async (req, res) => {
     const env = process.env.NODE_ENV === 'production' ? 'production' : 'staging';
     const config = await storage.getRobotsConfig(env);
-    
+
     if (config) {
       res.set('Content-Type', 'text/plain');
       res.send(config.content);

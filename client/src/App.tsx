@@ -20,6 +20,7 @@ import RobotsPage from "@/pages/admin/RobotsPage";
 import RedirectsPage from "@/pages/admin/RedirectsPage";
 import AnalyticsPage from "@/pages/admin/AnalyticsPage";
 import GlobalSeoPage from "@/pages/admin/GlobalSeoPage";
+import SettingsPage from "@/pages/admin/SettingsPage";
 
 function Router() {
   return (
@@ -29,7 +30,7 @@ function Router() {
       <Route path="/services" component={Services} />
       <Route path="/skills" component={Skills} />
       <Route path="/contact" component={Contact} />
-      
+
       {/* Admin Routes */}
       <Route path="/admin/login" component={AdminLogin} />
       <Route path="/admin" component={DashboardPage} />
@@ -43,7 +44,8 @@ function Router() {
       <Route path="/admin/redirects" component={RedirectsPage} />
       <Route path="/admin/analytics" component={AnalyticsPage} />
       <Route path="/admin/global-seo" component={GlobalSeoPage} />
-      
+      <Route path="/admin/settings" component={SettingsPage} />
+
       {/* Fallback */}
       <Route component={NotFound} />
     </Switch>

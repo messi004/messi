@@ -25,7 +25,7 @@ export default function AnalyticsPage() {
   }, [config]);
 
   const saveAnalytics = useMutation({
-    mutationFn: (data: any) => apiRequest('/api/seo/analytics', { method: 'POST', body: JSON.stringify(data), headers: { 'Content-Type': 'application/json' } }),
+    mutationFn: (data: any) => apiRequest('POST', '/api/seo/analytics', data),
     onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['/api/seo/analytics'] }); toast({ title: "Analytics settings saved!" }); }
   });
 
@@ -58,8 +58,8 @@ export default function AnalyticsPage() {
                     <Input value={metaPixel} onChange={(e) => setMetaPixel(e.target.value)} placeholder="1234567890" />
                     <p className="text-xs text-muted-foreground mt-1">Facebook/Meta Pixel identifier</p>
                   </div>
-                  <Button 
-                    onClick={() => saveAnalytics.mutate({ ga4MeasurementId: ga4Id, searchConsoleVerification: searchConsole, metaPixelId: metaPixel })} 
+                  <Button
+                    onClick={() => saveAnalytics.mutate({ ga4MeasurementId: ga4Id, searchConsoleVerification: searchConsole, metaPixelId: metaPixel })}
                     disabled={saveAnalytics.isPending}
                     className="w-full"
                   >

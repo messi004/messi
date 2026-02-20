@@ -1,14 +1,20 @@
 import { drizzle } from 'drizzle-orm/postgres-js';
 import postgres from 'postgres';
+import { createHash } from 'crypto';
 import * as schema from "@shared/schema";
+import "dotenv/config";
 
-const connectionString = "postgresql://postgres.dowmnaaetqugtfoekkxq:dCdVqk8OVq9UOW2X@aws-1-ap-northeast-1.pooler.supabase.com:6543/postgres";
+const connectionString = process.env.DATABASE_URL;
+
+if (!connectionString) {
+  throw new Error("DATABASE_URL must be set. Did you forget to provision a database?");
+}
 
 let client: ReturnType<typeof postgres>;
 let db: ReturnType<typeof drizzle>;
 
 try {
-  client = postgres(connectionString, { 
+  client = postgres(connectionString, {
     prepare: false,
     ssl: 'require',
     connect_timeout: 30,
@@ -22,12 +28,25 @@ try {
   throw error;
 }
 
-export { db };
+export { db, client };
+
+export function hashPassword(password: string): string {
+  return createHash('sha256').update(password).digest('hex');
+}
 
 export async function initializeDatabase() {
   try {
-    console.log("Connecting to Supabase database...");
-    
+    console.log("Connecting to Neon database...");
+
+    await client`
+      CREATE TABLE IF NOT EXISTS admin_users (
+        id SERIAL PRIMARY KEY,
+        username TEXT NOT NULL UNIQUE,
+        password_hash TEXT NOT NULL,
+        created_at TIMESTAMP DEFAULT NOW()
+      )
+    `;
+
     await client`
       CREATE TABLE IF NOT EXISTS projects (
         id SERIAL PRIMARY KEY,
@@ -154,9 +173,32 @@ export async function initializeDatabase() {
       )
     `;
 
+    await client`
+      CREATE TABLE IF NOT EXISTS images (
+        id SERIAL PRIMARY KEY,
+        filename TEXT NOT NULL,
+        mime_type TEXT NOT NULL,
+        data BYTEA NOT NULL,
+        size INTEGER NOT NULL,
+        created_at TIMESTAMP DEFAULT NOW()
+      )
+    `;
+
+    // Seed default admin user if none exists
+    const existingAdmins = await client`SELECT id FROM admin_users LIMIT 1`;
+    if (existingAdmins.length === 0) {
+      const defaultHash = hashPassword('Messi@876910');
+      await client`
+        INSERT INTO admin_users (username, password_hash) 
+        VALUES ('admin', ${defaultHash})
+      `;
+      console.log("Default admin user created (username: admin)");
+    }
+
     console.log("Database tables initialized successfully");
   } catch (error) {
     console.error("Failed to initialize database:", error);
     throw error;
   }
 }
+

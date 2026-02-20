@@ -29,17 +29,17 @@ export default function SchemaPage() {
   const { toast } = useToast();
 
   const createSchema = useMutation({
-    mutationFn: (data: any) => apiRequest('/api/seo/schema', { method: 'POST', body: JSON.stringify(data), headers: { 'Content-Type': 'application/json' } }),
+    mutationFn: (data: any) => apiRequest('POST', '/api/seo/schema', data),
     onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['/api/seo/schema'] }); toast({ title: "Schema created!" }); setIsDialogOpen(false); resetForm(); }
   });
 
   const updateSchema = useMutation({
-    mutationFn: ({ id, data }: { id: number; data: any }) => apiRequest(`/api/seo/schema/${id}`, { method: 'PATCH', body: JSON.stringify(data), headers: { 'Content-Type': 'application/json' } }),
+    mutationFn: ({ id, data }: { id: number; data: any }) => apiRequest('PATCH', `/api/seo/schema/${id}`, data),
     onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['/api/seo/schema'] }); toast({ title: "Schema updated!" }); setIsDialogOpen(false); resetForm(); }
   });
 
   const deleteSchema = useMutation({
-    mutationFn: (id: number) => apiRequest(`/api/seo/schema/${id}`, { method: 'DELETE' }),
+    mutationFn: (id: number) => apiRequest('DELETE', `/api/seo/schema/${id}`),
     onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['/api/seo/schema'] }); toast({ title: "Schema deleted" }); }
   });
 

@@ -29,7 +29,7 @@ export default function RobotsPage() {
   }, [config]);
 
   const saveRobots = useMutation({
-    mutationFn: (data: any) => apiRequest('/api/seo/robots', { method: 'POST', body: JSON.stringify(data), headers: { 'Content-Type': 'application/json' } }),
+    mutationFn: (data: any) => apiRequest('POST', '/api/seo/robots', data),
     onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['/api/seo/robots'] }); toast({ title: "Robots.txt saved!" }); }
   });
 
@@ -43,15 +43,15 @@ export default function RobotsPage() {
         <CardContent className="space-y-4">
           {isLoading ? <Loader2 className="animate-spin mx-auto" /> : (
             <>
-              <Textarea 
-                value={content} 
-                onChange={(e) => setContent(e.target.value)} 
-                className="font-mono min-h-[300px] text-sm" 
-                placeholder="User-agent: *&#10;Allow: /" 
+              <Textarea
+                value={content}
+                onChange={(e) => setContent(e.target.value)}
+                className="font-mono min-h-[300px] text-sm"
+                placeholder="User-agent: *&#10;Allow: /"
               />
               <div className="flex gap-4">
-                <Button 
-                  onClick={() => saveRobots.mutate({ environment: 'production', content })} 
+                <Button
+                  onClick={() => saveRobots.mutate({ environment: 'production', content })}
                   disabled={saveRobots.isPending}
                 >
                   {saveRobots.isPending ? "Saving..." : "Save Robots.txt"}

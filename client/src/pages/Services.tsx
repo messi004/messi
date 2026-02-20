@@ -7,7 +7,7 @@ import { motion } from "framer-motion";
 
 function usePageTracking() {
   useEffect(() => {
-    fetch('/api/track', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ pageSlug: 'services' }) }).catch(() => {});
+    fetch('/api/track', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ pageSlug: 'services' }) }).catch(() => { });
   }, []);
 }
 
@@ -41,39 +41,59 @@ const services = [
 
 export default function Services() {
   usePageTracking();
-  
+
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-mesh relative overflow-hidden">
+      {/* Animated background blobs */}
+      <div className="absolute top-0 right-0 w-full h-full overflow-hidden -z-10 opacity-20 pointer-events-none">
+        <div className="absolute top-[30%] left-[20%] w-96 h-96 bg-primary/20 rounded-full mix-blend-screen filter blur-[120px] animate-blob" />
+        <div className="absolute bottom-[20%] right-[10%] w-80 h-80 bg-secondary/20 rounded-full mix-blend-screen filter blur-[100px] animate-blob animation-delay-2000" />
+      </div>
+
       <Navigation />
-      
-      <main className="pt-32 pb-20 container mx-auto px-4 lg:px-8">
-        <div className="text-center max-w-3xl mx-auto mb-16">
-          <h1 className="text-4xl md:text-5xl font-bold font-heading mb-6">
-            Services & <span className="text-gradient">Solutions</span>
-          </h1>
-          <p className="text-muted-foreground text-lg">
-            I provide comprehensive technical solutions ranging from full-stack development
-            to security auditing and automation.
-          </p>
+
+      <main className="pt-32 pb-24 container mx-auto px-4 lg:px-8 relative z-10">
+        <div className="text-center max-w-3xl mx-auto mb-20">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+          >
+            <h1 className="text-4xl md:text-6xl font-bold font-heading mb-6 tracking-tight">
+              Services & <span className="text-gradient">Solutions</span>
+            </h1>
+            <p className="text-muted-foreground text-lg md:text-xl font-light">
+              I provide comprehensive technical solutions ranging from robust full-stack development
+              to intricate security auditing and automated workflows.
+            </p>
+          </motion.div>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {services.map((service, index) => (
             <motion.div
               key={index}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: index * 0.1 }}
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: "-50px" }}
+              transition={{ delay: index * 0.1, duration: 0.5 }}
             >
-              <Card className="h-full bg-card/50 border-border/50 hover:border-primary/50 transition-all duration-300 hover:shadow-lg hover:-translate-y-1">
-                <CardHeader>
-                  <div className="mb-4 p-3 bg-background rounded-xl w-fit border border-border">
+              <Card className="h-full relative overflow-hidden glass-card p-8 group border-white/5 rounded-2xl">
+                <div className="absolute top-0 right-0 p-8 opacity-5 group-hover:opacity-10 transition-all duration-500 transform translate-x-4 -translate-y-4 scale-150">
+                  {service.icon}
+                </div>
+
+                <div className="relative z-10">
+                  <div className="mb-6 w-16 h-16 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center group-hover:bg-white/10 transition-colors shadow-inner">
                     {service.icon}
                   </div>
-                  <CardTitle className="text-xl font-bold font-heading">{service.title}</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-muted-foreground leading-relaxed">
+                  <CardTitle className="text-2xl font-bold font-heading mb-4 text-white group-hover:text-primary transition-colors">
+                    {service.title}
+                  </CardTitle>
+                </div>
+
+                <CardContent className="p-0 relative z-10 mt-2">
+                  <p className="text-muted-foreground leading-relaxed text-[1.05rem]">
                     {service.description}
                   </p>
                 </CardContent>
