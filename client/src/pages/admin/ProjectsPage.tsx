@@ -11,7 +11,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Loader2, Plus, Trash2, Pencil, AlertTriangle } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { insertProjectSchema, type InsertProject, type Project } from "@shared/schema";
+import { insertProjectSchema, type InsertProject, type Project } from "../../../../shared/schema.js";
 import { useToast } from "@/hooks/use-toast";
 
 export default function ProjectsPage() {

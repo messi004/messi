@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { api, type LoginRequest } from "@shared/routes";
+import { api, type LoginRequest } from "../../../shared/routes.js";
 
 export function useAuth() {
   const queryClient = useQueryClient();
@@ -20,14 +20,14 @@ export function useAuth() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(credentials),
       });
-      
+
       if (!res.ok) {
         if (res.status === 401) {
           throw new Error("Invalid credentials");
         }
         throw new Error("Login failed");
       }
-      
+
       return api.auth.login.responses[200].parse(await res.json());
     },
     onSuccess: () => {
