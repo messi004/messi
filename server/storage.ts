@@ -1,4 +1,4 @@
-import { db } from "./db";
+import { db } from "./db.js";
 import {
   projects,
   contactMessages,
@@ -243,7 +243,7 @@ export class DatabaseStorage {
     const [existing] = await db.select().from(pageViews).where(eq(pageViews.pageSlug, pageSlug));
     if (existing) {
       await db.update(pageViews)
-        .set({ 
+        .set({
           viewCount: sql`${pageViews.viewCount} + 1`,
           lastViewed: new Date()
         })
