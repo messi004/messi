@@ -1,7 +1,7 @@
 import { drizzle } from 'drizzle-orm/postgres-js';
 import postgres from 'postgres';
 import { createHash } from 'crypto';
-import * as schema from "@shared/schema";
+import * as schema from "../shared/schema.js";
 import "dotenv/config";
 
 const connectionString = process.env.DATABASE_URL;

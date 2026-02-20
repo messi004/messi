@@ -29,7 +29,7 @@ import {
   type Redirect,
   type InsertRedirect,
   type PageView
-} from "@shared/schema";
+} from "../shared/schema.js";
 import { eq, desc, sql } from "drizzle-orm";
 
 export class DatabaseStorage {

@@ -1,12 +1,12 @@
 import type { Express, Request, Response, NextFunction } from "express";
 import type { Server } from "http";
 import { storage } from "./storage.js";
-import { api } from "@shared/routes";
+import { api } from "../shared/routes.js";
 import { z } from "zod";
 import multer from "multer";
 import { uploadImageToDb, getImageFromDb } from "./neon-storage.js";
 import { initializeDatabase, client, hashPassword } from "./db.js";
-import { changePasswordSchema } from "@shared/schema";
+import { changePasswordSchema } from "../shared/schema.js";
 
 const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 10 * 1024 * 1024 } }); // 10MB limit
 
